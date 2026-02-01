@@ -1,0 +1,68 @@
+EvalData (input)
+   ↓
+buildMessages()
+   ↓
+Expose FAKE tools (schemas only)
+   ↓
+generateText()
+   ↓
+LLM chooses tool (or not)
+   ↓
+Extract toolCalls
+   ↓
+Return evaluation signal
+
+
+This code is a laboratory for agent intelligence.
+It answers:
+“Can my agent think correctly under constraints?”
+Once you master this pattern, you’re no longer just using LLMs —
+you’re engineering intelligent systems.
+
+
+
+
+What is “evaluation data”
+Evaluation data is usually a structured object like:
+EvalData = {
+  input: "Delete all temp files",
+  tools: ["listFiles", "deleteFile"],
+  systemPrompt: "...",
+  config: {
+    model: "gpt-4o-mini",
+    temperature: 0
+  }
+}
+
+
+
+
+Single-turn executor (what it really means)
+Definition
+
+A single-turn executor:
+
+runs one LLM call
+
+allows at most one decision
+
+no loops
+
+no tool execution
+
+Visual
+Prompt → LLM → (Optional tool call) → STOP
+
+Used for:
+
+tool routing tests
+
+prompt regression
+
+fast CI checks
+
+Example (your code)
+stopWhen: stepCountIs(1)
+
+
+That line defines the executor type.

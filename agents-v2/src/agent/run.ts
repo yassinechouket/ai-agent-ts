@@ -22,8 +22,8 @@ export const runAgent = async (
   userMessage: string,
   conversationHistory: ModelMessage[],
   callbacks: AgentCallbacks,
-)=>{
-    const {text,toolCalls}=await generateText({
+): Promise<ModelMessage[]> => {
+    const {text}=await generateText({
     model: google(MODEL_NAME),
     prompt:userMessage,
     system:SYSTEM_PROMPT,
@@ -33,8 +33,14 @@ export const runAgent = async (
         tracer: getTracer(),
       },
     });
-    console.log(text, toolCalls);
+    console.log(text);
 
     console.log("done");
+    
+    return [
+      ...conversationHistory,
+      { role: "user", content: userMessage },
+      { role: "assistant", content: text },
+    ];
 };
 
