@@ -1,3 +1,7 @@
+
+import type{SingleTurnResult,MultiTurnResult}from "./types.js";
+import type{EvalTarget,MultiTurnTarget}from "./types.js";
+
 export function toolsSelected(
   output: SingleTurnResult | MultiTurnResult,
   target: EvalTarget | MultiTurnTarget,
