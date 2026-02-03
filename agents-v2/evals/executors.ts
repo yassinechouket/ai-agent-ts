@@ -1,5 +1,5 @@
 import { generateText, stepCountIs, tool, type ToolSet } from "ai";
-import { createGoogleGenerativeAI } from "@ai-sdk/google";
+import { createOpenAI } from "@ai-sdk/openai";
 import { z } from "zod";
 
 import type {
@@ -9,8 +9,13 @@ import type {
   MultiTurnResult,
 } from "./types.ts";
 import { buildMessages, buildMockedTools } from "./utils.ts";
-const google = createGoogleGenerativeAI({
-  apiKey: process.env.GOOGLE_GENERATIVE_AI_API_KEY,
+
+// Use mock mode if EVAL_MOCK_MODE is set (useful for testing with quota limits)
+const MOCK_MODE = process.env.EVAL_MOCK_MODE === "true";
+
+const groq = createOpenAI({
+  apiKey: process.env.LLAMA_API_KEY,
+  baseURL: "https://api.groq.com/openai/v1",
 });
 
 /**
@@ -59,6 +64,15 @@ const TOOL_DEFINITIONS: Record<
   export async function singleTurnWithMocks(
   data: EvalData,
 ): Promise<SingleTurnResult> {
+  if (MOCK_MODE) {
+    // In mock mode, return empty results for testing
+    return {
+      toolCalls: [],
+      toolNames: [],
+      selectedAny: false,
+    };
+  }
+
   const messages = buildMessages(data);
 
   // Build mocked tools from definitions
@@ -75,11 +89,12 @@ const TOOL_DEFINITIONS: Record<
 
 
   const result = await generateText({
-    model: google(data.config?.model ?? "gemini-3-flash-preview"),
+    model: groq(data.config?.model ?? "llama-3.1-8b-instant"),
     messages,
     tools,
     stopWhen: stepCountIs(1),
-    temperature: data.config?.temperature ?? undefined,
+    temperature: data.config?.temperature ?? 0.7,
+    maxTokens: 1024,
   });
 
   const toolCalls = (result.toolCalls ?? []).map((tc) => ({
