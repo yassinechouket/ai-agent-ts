@@ -1,6 +1,12 @@
-import { generateText, stepCountIs, tool, type ToolSet } from "ai";
+import { generateText, stepCountIs, tool, type ModelMessage, type ToolSet } from "ai";
 import { createOpenAI } from "@ai-sdk/openai";
 import { z } from "zod";
+import { createGoogleGenerativeAI } from "@ai-sdk/google";
+
+const google = createGoogleGenerativeAI({
+  apiKey: process.env.GOOGLE_API_KEY,
+});
+const MODEL_NAME = "gemini-3-flash-preview";
 
 import type {
   EvalData,
@@ -9,6 +15,7 @@ import type {
   MultiTurnResult,
 } from "./types.ts";
 import { buildMessages, buildMockedTools } from "./utils.ts";
+import { SYSTEM_PROMPT } from "../src/agent/system/prompt.ts";
 
 // Use mock mode if EVAL_MOCK_MODE is set (useful for testing with quota limits)
 const MOCK_MODE = process.env.EVAL_MOCK_MODE === "true";
@@ -110,3 +117,60 @@ const TOOL_DEFINITIONS: Record<
     selectedAny: toolNames.length > 0,
   };
 }
+
+
+export async function multiTurnWithMocks(
+  data: MultiTurnEvalData,
+):Promise<MultiTurnResult>{
+  const tools=buildMockedTools(data.mockTools);
+
+  const messages: ModelMessage[] = data.messages ?? [
+    { role: "system", content: SYSTEM_PROMPT },
+    { role: "user", content: data.prompt! },
+  ];
+
+  const result=await generateText({
+    model: google(data.config?.model ?? MODEL_NAME),
+    messages,
+    tools,
+    stopWhen: stepCountIs(data.config?.maxSteps ?? 20),
+  });
+
+    const allToolCalls:string[]=[];
+    const steps=result.steps.map((step)=>{
+      const stepToolCalls=(step.toolCalls ?? []).map((tc)=>{
+        allToolCalls.push(tc.toolName);
+        return {
+          toolName: tc.toolName,
+          args: "args" in tc ? tc.args : {},
+        };
+      });
+      const stepToolResults=(step.toolResults ?? []).map((tr)=>{
+        return {
+          toolName: tr.toolName,
+          result: "result" in tr ? tr.result : tr,
+        };
+      });
+  
+        return {
+          toolCalls: stepToolCalls.length > 0 ? stepToolCalls : undefined,
+          toolResults: stepToolResults.length > 0 ? stepToolResults : undefined,
+          text: step.text || undefined,
+        };
+      });
+      const toolsUsed=[...new Set(allToolCalls)];
+
+       return {
+      text: result.text,
+      steps,
+      toolsUsed,
+      toolCallOrder: allToolCalls,
+  };
+}
+
+
+
+
+
+
+

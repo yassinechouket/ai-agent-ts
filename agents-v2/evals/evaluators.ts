@@ -1,6 +1,75 @@
 
 import type{SingleTurnResult,MultiTurnResult}from "./types.js";
 import type{EvalTarget,MultiTurnTarget}from "./types.js";
+import {z} from "zod";
+import { createGoogleGenerativeAI } from "@ai-sdk/google";
+import { generateObject } from "ai";
+
+const judgeSchema = z.object({
+  score: z
+    .number()
+    .min(1)
+    .max(10)
+    .describe("Score from 1-10 where 10 is perfect"),
+  reason: z.string().describe("Brief explanation for the score"),
+
+});
+const google = createGoogleGenerativeAI({
+  apiKey: process.env.GOOGLE_API_KEY,
+});
+const MODEL_NAME = "gemini-3-flash-preview";
+
+export async function llmJudge(
+  output: MultiTurnResult,
+  target: MultiTurnTarget,
+):Promise<number>{
+  const result=await generateObject({
+    model: google(MODEL_NAME),
+    schema: judgeSchema,
+    schemaName: "evaluation",
+    providerOptions:{
+     google:{
+      reasoningEffort: "high",
+     },
+    },
+    schemaDescription: "Evaluation of an AI agent response",
+    messages: [
+      {
+        role: "system",
+        content: `You are an evaluation judge. Score the agent's response on a scale of 1-10.
+
+        Scoring criteria:
+        - 10: Response fully addresses the task using tool results correctly
+        - 7-9: Response is mostly correct with minor issues
+        - 4-6: Response partially addresses the task
+        - 1-3: Response is mostly incorrect or irrelevant`,
+              
+      },
+       {
+        role: "user",
+        content: `Task: ${target.originalTask}
+
+          Tools called: ${JSON.stringify(output.toolCallOrder)}
+          Tool results provided: ${JSON.stringify(target.mockToolResults)}
+
+          Agent's final response:
+          ${output.text}
+
+          Evaluate if this response correctly uses the tool results to answer the task.`,
+      },
+    ]
+  });
+
+   return result.object.score / 10;
+}
+
+
+
+
+
+
+
+
 
 export function toolsSelectedScore(
   output:SingleTurnResult,
