@@ -1,12 +1,12 @@
 import { generateText, stepCountIs, tool, type ModelMessage, type ToolSet } from "ai";
 import { createOpenAI } from "@ai-sdk/openai";
 import { z } from "zod";
-import { createGoogleGenerativeAI } from "@ai-sdk/google";
 
-const google = createGoogleGenerativeAI({
-  apiKey: process.env.GOOGLE_API_KEY,
+
+const openai = createOpenAI({
+  apiKey: process.env.OPENAI_API_KEY,
 });
-const MODEL_NAME = "gemini-3-flash-preview";
+const MODEL_NAME = "gpt-4o-mini";
 
 import type {
   EvalData,
@@ -20,10 +20,6 @@ import { SYSTEM_PROMPT } from "../src/agent/system/prompt.ts";
 // Use mock mode if EVAL_MOCK_MODE is set (useful for testing with quota limits)
 const MOCK_MODE = process.env.EVAL_MOCK_MODE === "true";
 
-const groq = createOpenAI({
-  apiKey: process.env.LLAMA_API_KEY,
-  baseURL: "https://api.groq.com/openai/v1",
-});
 
 /**
  * Tool definitions for mocked single-turn evaluations.
@@ -96,7 +92,7 @@ const TOOL_DEFINITIONS: Record<
 
 
   const result = await generateText({
-    model: groq(data.config?.model ?? "llama-3.1-8b-instant"),
+    model: openai(MODEL_NAME),
     messages,
     tools,
     stopWhen: stepCountIs(1),
@@ -130,11 +126,12 @@ export async function multiTurnWithMocks(
   ];
 
   const result=await generateText({
-    model: google(data.config?.model ?? MODEL_NAME),
+    model: openai(data.config?.model ?? MODEL_NAME),
     messages,
     tools,
     stopWhen: stepCountIs(data.config?.maxSteps ?? 20),
   });
+  console.log("LLM response:", result);
 
     const allToolCalls:string[]=[];
     const steps=result.steps.map((step)=>{
@@ -159,6 +156,8 @@ export async function multiTurnWithMocks(
         };
       });
       const toolsUsed=[...new Set(allToolCalls)];
+      console.log("Tools used in this run:", toolsUsed);
+      console.log("Tool call order:", allToolCalls);
 
        return {
       text: result.text,

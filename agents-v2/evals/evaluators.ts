@@ -2,7 +2,7 @@
 import type{SingleTurnResult,MultiTurnResult}from "./types.js";
 import type{EvalTarget,MultiTurnTarget}from "./types.js";
 import {z} from "zod";
-import { createGoogleGenerativeAI } from "@ai-sdk/google";
+import { createOpenAI } from "@ai-sdk/openai";
 import { generateObject } from "ai";
 
 const judgeSchema = z.object({
@@ -14,17 +14,17 @@ const judgeSchema = z.object({
   reason: z.string().describe("Brief explanation for the score"),
 
 });
-const google = createGoogleGenerativeAI({
-  apiKey: process.env.GOOGLE_API_KEY,
+const openai = createOpenAI({
+  apiKey: process.env.OPENAI_API_KEY,
 });
-const MODEL_NAME = "gemini-3-flash-preview";
+const MODEL_NAME = "gpt-4o-mini";
 
 export async function llmJudge(
   output: MultiTurnResult,
   target: MultiTurnTarget,
 ):Promise<number>{
   const result=await generateObject({
-    model: google(MODEL_NAME),
+    model: openai(MODEL_NAME),
     schema: judgeSchema,
     schemaName: "evaluation",
     providerOptions:{
@@ -62,12 +62,6 @@ export async function llmJudge(
 
    return result.object.score / 10;
 }
-
-
-
-
-
-
 
 
 
