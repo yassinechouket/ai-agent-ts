@@ -1,0 +1,7 @@
+How is the usage percentage calculated for tracking token consumption against a model's context window limit?
+
+
+The usage percentage is calculated by dividing the total 
+tokens (input and output) by the context window token limit,
+then multiplying by 100. The formula is: (total tokens / context window limit) × 100.
+This provides a percentage showing how much of the available context window has been used.

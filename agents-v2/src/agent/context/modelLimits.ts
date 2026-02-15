@@ -7,18 +7,18 @@ export const DEFAULT_THRESHOLD = 0.8;
 
 /**
  * Model limits registry
- * Currently only includes GPT-5 models
+ * Currently only includes Gemini models
  */
 const MODEL_LIMITS: Record<string, ModelLimits> = {
-  "gpt-5": {
-    inputLimit: 272000,
-    outputLimit: 128000,
-    contextWindow: 400000,
+  "gemini-1.5-flash": {
+    inputLimit: 128000,
+    outputLimit: 16000,
+    contextWindow: 128000,
   },
-  "gpt-5-mini": {
-    inputLimit: 272000,
-    outputLimit: 128000,
-    contextWindow: 400000,
+  "gemini-1.5-pro": {
+    inputLimit: 128000,
+    outputLimit: 16000,
+    contextWindow: 128000,
   },
 };
 
@@ -34,7 +34,7 @@ const DEFAULT_LIMITS: ModelLimits = {
 /**
  * Get token limits for a specific model.
  * Falls back to default limits if model not found.
- * Matches GPT-5 variants (gpt-5, gpt-5-mini, etc.)
+ * Matches Gemini variants (gemini-*, etc.)
  */
 export function getModelLimits(model: string): ModelLimits {
   // Direct match
@@ -42,9 +42,9 @@ export function getModelLimits(model: string): ModelLimits {
     return MODEL_LIMITS[model];
   }
 
-  // Check for gpt-5 variants
-  if (model.startsWith("gpt-5")) {
-    return MODEL_LIMITS["gpt-5"];
+  // Check for gemini variants
+  if (model.startsWith("gemini-")) {
+    return MODEL_LIMITS["gemini-1.5-flash"];
   }
 
   return DEFAULT_LIMITS;
@@ -58,7 +58,7 @@ export function isOverThreshold(
   contextWindow: number,
   threshold: number = DEFAULT_THRESHOLD,
 ): boolean {
-  return false;
+  return totalTokens >= contextWindow * threshold;
 }
 
 /**
@@ -68,5 +68,8 @@ export function calculateUsagePercentage(
   totalTokens: number,
   contextWindow: number,
 ): number {
-  return 0;
+  if (contextWindow === 0) {
+    return 0;
+  }
+  return (totalTokens / contextWindow) * 100;
 }

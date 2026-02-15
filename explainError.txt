@@ -42,3 +42,13 @@ JSON.stringify() is the key — it converts the complex Tavily response into a p
 
 Why Did webSearch Work Without This?
 Because openai.tools.webSearch() is a provider-side tool — OpenAI runs it on their servers and injects the result automatically. Your messages.push(...) code is never called for it. Tavily is a client-side tool — your code runs it and you are responsible for sending the result back in the correct format.
+
+
+
+
+// result is a string already → both work
+output: { type: "text", value: result }
+output: { type: "text", value: JSON.stringify(result) }
+
+// result is an object (Tavily, file content, etc.) → only this works
+output: { type: "text", value: JSON.stringify(result) }
