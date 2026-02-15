@@ -13,6 +13,17 @@ export const searchTool = tool({
     query: z.string().describe('The search query'),
   }),
   execute: async ({ query }) => {
-  return await tavilyClient.search(query);
-    },
+    const response = await tavilyClient.search(query);
+    
+    // ✅ Return a clean, simple structure
+    return {
+      query: response.query,
+      results: response.results.map((r) => ({
+        title: r.title,
+        url: r.url,
+        content: r.content,
+        score: r.score,
+      })),
+    };
+  },
 });

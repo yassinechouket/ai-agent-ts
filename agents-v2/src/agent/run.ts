@@ -113,7 +113,7 @@ export async function runAgent(
             type: "tool-result",
             toolCallId: tc.toolCallId,
             toolName: tc.toolName,
-            output: { type: "text", value: result },
+            output: { type: "text", value: JSON.stringify(result) }
           },
         ],
       });

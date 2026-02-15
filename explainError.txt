@@ -1,0 +1,44 @@
+Clear Explanation
+What is ToolResultPart?
+When the AI model calls a tool (like your Tavily search), your code runs the tool and gets a result. You then need to send that result back to the model so it can continue the conversation. ToolResultPart is the shape of that message.
+User asks question
+    → Model says "I need to call searchTool"
+        → Your code runs Tavily
+            → You send result back to model  ← This is ToolResultPart
+                → Model uses result to answer user
+
+What is LanguageModelV2ToolResultOutput?
+This is the type of the output field inside ToolResultPart. The SDK only accepts these exact shapes:
+typescripttype LanguageModelV2ToolResultOutput =
+  | { type: 'text';       value: string }  // plain text result
+  | { type: 'json';       value: JSONValue } // structured JSON result
+  | { type: 'error-text'; value: string }  // error as text
+  | { type: 'error-json'; value: JSONValue } // error as JSON
+
+What Was Your Original Problem?
+You were passing the raw Tavily response object directly:
+typescript// ❌ WRONG - raw Tavily object is complex/nested, fails SDK validation
+output: { type: "text", value: result }
+//                            ^^^^^^
+//                    This was the whole Tavily response object
+//                    not a string — SDK rejected it
+
+The Correct Solution
+typescriptmessages.push({
+  role: "tool",
+  content: [
+    {
+      type: "tool-result",
+      toolCallId: tc.toolCallId,
+      toolName: tc.toolName,
+      output: { 
+        type: "text", 
+        value: JSON.stringify(result) // ✅ convert ANY object to a string
+      },
+    },
+  ],
+});
+JSON.stringify() is the key — it converts the complex Tavily response into a plain string, which satisfies { type: 'text', value: string }.
+
+Why Did webSearch Work Without This?
+Because openai.tools.webSearch() is a provider-side tool — OpenAI runs it on their servers and injects the result automatically. Your messages.push(...) code is never called for it. Tavily is a client-side tool — your code runs it and you are responsible for sending the result back in the correct format.
