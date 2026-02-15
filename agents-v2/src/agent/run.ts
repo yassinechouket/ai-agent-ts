@@ -4,11 +4,20 @@ import {executeTool} from "./executeTool.ts";
 import { createOpenAI } from "@ai-sdk/openai";
 import { getTracer,Laminar } from "@lmnr-ai/lmnr";
 import { SYSTEM_PROMPT } from "./system/prompt.ts";
+import {
+  estimateMessagesTokens,
+  getModelLimits,
+  isOverThreshold,
+  calculateUsagePercentage,
+  compactConversation,
+  DEFAULT_THRESHOLD,
+} from "./context/index.ts";
 
 import { filterCompatibleMessages } from "./system/filterMessages.ts";
 
 import type { AgentCallbacks, ToolCallInfo } from "../types.ts";
 import { tools } from "./tools/index.ts";
+import { es } from "zod/v4/locales";
 const openai = createOpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
@@ -25,15 +34,22 @@ export async function runAgent(
   conversationHistory: ModelMessage[],
   callbacks: AgentCallbacks,
 ): Promise<ModelMessage[]> {
+
+  const modelLimits = getModelLimits(MODEL_NAME);
   const workingHistory = filterCompatibleMessages(conversationHistory);
 
-  const messages: ModelMessage[] = [
+  let messages: ModelMessage[] = [
     { role: "system",
       content: SYSTEM_PROMPT,
     },...workingHistory,
     { role: "user", content: userMessage },
   ];
   let fullResponse = "";
+
+  const perCheckTokens = estimateMessagesTokens(messages);
+  if(isOverThreshold(perCheckTokens.total, modelLimits.contextWindow, DEFAULT_THRESHOLD)){
+    messages=await compactConversation(messages,MODEL_NAME);
+  }
   
   
 
@@ -49,6 +65,22 @@ export async function runAgent(
       
 
     });
+    const reportTokenUsage = () => {
+  if (callbacks.onTokenUsage) {
+    const usage = estimateMessagesTokens(messages);
+    callbacks.onTokenUsage({
+      inputTokens: usage.input,
+      outputTokens: usage.output,
+      totalTokens: usage.total,
+      contextWindow: modelLimits.contextWindow,
+      threshold: DEFAULT_THRESHOLD,
+      percentage: calculateUsagePercentage(
+        usage.total,
+        modelLimits.contextWindow,
+      ),
+    });
+      }
+    };
 
     const toolCalls:ToolCallInfo[] = [];
     let currentText = "";
@@ -98,6 +130,7 @@ export async function runAgent(
     if (finishReason !== "tool-calls" || toolCalls.length === 0) {
       const responseMessages = await result.response;
       messages.push(...responseMessages.messages);
+      reportTokenUsage();
       break;
     }
     const responseMessages = await result.response;
@@ -117,6 +150,7 @@ export async function runAgent(
           },
         ],
       });
+      reportTokenUsage();
     }
   }
 
