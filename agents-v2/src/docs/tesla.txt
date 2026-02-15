@@ -1,0 +1,16 @@
+Tesla
+Contact: Nathan Ash – Head of Software Integration
+Sales Stage: Early Demo
+Deal Size: $600K (initial scope)
+Meetings:
+May 10: Robotics analytics walkthrough.
+May 14: Discussion with manufacturing systems team.
+Needs:
+Predictive maintenance alerts for Gigafactory robotics arms.
+Offline deployment (low latency / no external traffic).
+Objections:
+Concern about vendor lock-in; prefers modular system.
+Internal Notes:
+Use on-prem reference from Vantage Energy rollout.
+Next Steps:
+Share local agent deployment option + performance benchmarks.

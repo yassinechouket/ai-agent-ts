@@ -1,0 +1,17 @@
+Microsoft
+Contact: Jane Doe – Head of AI Platform Partnerships
+Sales Stage: Technical Evaluation (Late Stage)
+Deal Size: $720K ARR
+Meetings:
+April 4: Architecture deep dive with Azure AI team.
+May 2: Compliance & audit alignment workshop.
+Needs:
+Integration with Azure AI Studio for LLM monitoring.
+Compliance alerts for multi-tenant AI deployments.
+Objections:
+Wants FedRAMP Moderate within 6 months.
+Internal Notes:
+They’re replacing an internal tool. Highlight speed + coverage.
+Next Steps:
+Provide SOC 2 Type II audit.
+Draft SOW with legal by June 10.

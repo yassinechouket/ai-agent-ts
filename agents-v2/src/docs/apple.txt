@@ -1,0 +1,16 @@
+Meta (Facebook)
+Contact: Jordan Miguel – Director of Platform Strategy
+Sales Stage: Proposal Sent
+Deal Size: $950K (multi-org rollout)
+Meetings:
+May 1: Advanced segmentation demo.
+May 12: Procurement walkthrough.
+Needs:
+Privacy-safe user behavior analytics for ad optimization.
+Objections:
+Legal reviewing cross-border data routing concerns.
+Internal Notes:
+Competing with Mixpanel and Heap.
+Next Steps:
+Send updated DPA.
+Follow up post-policy review (ETA June 7).

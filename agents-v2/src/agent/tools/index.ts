@@ -1,5 +1,5 @@
 import { readFile, writeFile, listFiles, deleteFile } from "./file.ts";
-import { searchTool } from "./search.ts";
+import { searchTool,searchVectorDB } from "./search.ts";
 import { webSearch } from "./WebSearch.ts";
 
 // All tools combined for the agent
@@ -8,14 +8,16 @@ export const tools = {
   writeFile,
   listFiles,
   deleteFile,
-  searchTool
+  searchTool,
+  searchVectorDB,
+
 
 };
 
 // Export individual tools for selective use in evals
 export { readFile, writeFile, listFiles, deleteFile } from "./file.ts";
 export {webSearch} from "./WebSearch.ts";
-export { searchTool } from "./search.ts";
+export { searchTool,searchVectorDB } from "./search.ts";
 
 // Tool sets for evals
 export const fileTools = {

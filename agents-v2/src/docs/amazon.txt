@@ -1,0 +1,18 @@
+Amazon
+Contact: Joe Smith - VP, Infrastructure Strategy
+Sales Stage: Discovery (SQL)
+Deal Size: Est. $450K ARR
+Meetings:
+May 12: Intro call. Focus on AWS internal cost visibility.
+May 17: Demo of usage spike detection module.
+Needs:
+Real-time usage-based alerts for finance ops.
+Historical usage analytics with granularity below SKU level.
+Objections:
+Concerned about integration effort with internal billing APIs.
+Internal Notes:
+Similar use case to Jetstream (current customer); POC completed in 3
+weeks.
+Next Steps:
+Share pricing tiers.
+Align with FinOps team lead on pilot scope by June 1.
